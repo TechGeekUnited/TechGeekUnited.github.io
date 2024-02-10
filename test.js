@@ -1,60 +1,59 @@
-var UI = require('ui');
-var ajax = require('ajax');
+var commands = [{
+  name: 'setText',
+  params: [{
+    name: 'title',
+  }, {
+    name: 'subtitle',
+  }, {
+    name: 'body',
+  }, {
+    name: 'clear',
+  }],
+}, {
+  name: 'singleClick',
+  params: [{
+    name: 'button',
+  }],
+}, {
+  name: 'longClick',
+  params: [{
+    name: 'button',
+  }],
+}, {
+  name: 'vibe',
+  params: [{
+    name: 'type',
+  }],
+}];
 
-var webBrowser = new UI.Card({
-  title: 'Web Browser',
-  body: 'Press Select to load website',
-  scrollable: true
+var currentIndex = 0;
+
+simply.on('singleClick', function(e) {
+  if (e.button === 'select') {
+    if (currentIndex < commands.length) {
+      executeCommand(commands[currentIndex]);
+      currentIndex++;
+    } else {
+      simply.text({ title: 'Error', body: 'No more commands' });
+    }
+  }
 });
 
-webBrowser.on('click', 'select', function() {
-  // Show a menu to input website URL
-  var urlMenu = new UI.Menu({
-    sections: [{
-      title: 'Enter URL',
-      items: [{
-        title: 'Confirm',
-        icon: 'images/menu_icon.png',
-        subtitle: 'Press Select'
-      }]
-    }]
-  });
-
-  var urlText = '';
-
-  urlMenu.on('select', function(e) {
-    if (e.item.title === 'Confirm') {
-      // Load website using AJAX
-      ajax(
-        {
-          url: urlText,
-          type: 'text'
-        },
-        function(data) {
-          // Display the website content
-          webBrowser.body(data);
-        },
-        function(error) {
-          // Display error if unable to load website
-          webBrowser.body('Error: ' + error);
-        }
-      );
-    }
-  });
-
-  // Prompt user to enter URL
-  urlMenu.on('show', function() {
-    urlText = '';
-    webBrowser.subtitle('');
-  });
-
-  urlMenu.on('select', function(e) {
-    if (e.item.title === 'Confirm') {
-      urlMenu.hide();
-    }
-  });
-
-  urlMenu.show();
-});
-
-webBrowser.show();
+function executeCommand(command) {
+  switch (command.name) {
+    case 'setText':
+      simply.text({
+        title: command.params[0].value,
+        subtitle: command.params[1].value,
+        body: command.params[2].value,
+        clear: command.params[3].value || false
+      });
+      break;
+    case 'vibe':
+      simply.vibe(command.params[0].value);
+      break;
+    // Add cases for other commands as needed
+    default:
+      simply.text({ title: 'Error', body: 'Unsupported command' });
+  }
+}
