@@ -1,59 +1,24 @@
-var commands = [{
-  name: 'setText',
-  params: [{
-    name: 'title',
-  }, {
-    name: 'subtitle',
-  }, {
-    name: 'body',
-  }, {
-    name: 'clear',
-  }],
-}, {
-  name: 'singleClick',
-  params: [{
-    name: 'button',
-  }],
-}, {
-  name: 'longClick',
-  params: [{
-    name: 'button',
-  }],
-}, {
-  name: 'vibe',
-  params: [{
-    name: 'type',
-  }],
-}];
-
 var currentIndex = 0;
+var websites = [
+  'https://www.example.com',
+  'https://www.google.com',
+  'https://www.wikipedia.org'
+];
 
 simply.on('singleClick', function(e) {
   if (e.button === 'select') {
-    if (currentIndex < commands.length) {
-      executeCommand(commands[currentIndex]);
+    if (currentIndex < websites.length) {
+      var url = websites[currentIndex];
+      simply.subtitle('Loading...');
+      simply.setText({ title: 'Web Browser', body: 'Loading ' + url + '...' }, true);
+      simply.util.ajax({
+        url: url
+      }, function(data) {
+        simply.setText({ title: 'Web Browser', body: data }, true);
+      });
       currentIndex++;
     } else {
-      simply.text({ title: 'Error', body: 'No more commands' });
+      simply.setText({ title: 'Error', body: 'No more websites to load.' }, true);
     }
   }
 });
-
-function executeCommand(command) {
-  switch (command.name) {
-    case 'setText':
-      simply.text({
-        title: command.params[0].value,
-        subtitle: command.params[1].value,
-        body: command.params[2].value,
-        clear: command.params[3].value || false
-      });
-      break;
-    case 'vibe':
-      simply.vibe(command.params[0].value);
-      break;
-    // Add cases for other commands as needed
-    default:
-      simply.text({ title: 'Error', body: 'Unsupported command' });
-  }
-}
